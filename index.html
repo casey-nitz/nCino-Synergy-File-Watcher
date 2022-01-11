@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js">  </script>
+        <link rel="stylesheet" href="https://iris.alkamitech.com/cdn/iris-foundation/latest/iris-foundation.min.css">
+        <link rel="stylesheet" href="https://iris.alkamitech.com/cdn/iris/2.1.3/iris.min.css">
+        <link rel="stylesheet" href="https://iris.alkamitech.com/cdn/iris/2.1.3/iris-theme-default.min.css">
+        <link rel="stylesheet" href="https://assets.orb.alkamitech.com/production/icons/Default/font/font-icons.min.css">
+        <script>
+            let curDisplayText = "";
+            $(document).ready(function(){
+                var user,pass;
+                $("#submit").click(function(){
+                    var element = document.getElementById('range-select');
+                    var dropdownComponent = Alkami.Iris.DropdownComponent.componentForElement(element);
+                    //select a different value
+                    //dropdownComponent.value = dropdownComponent.options[0].value;
+                    console.log({ dateRange : dropdownComponent.value })
+                    let symbol = document.getElementById('loadingSymbol');
+                    symbol.style.display="";
+                    $.post("http://localhost:3000/handle/"+dropdownComponent.value,{ dateRange : dropdownComponent.value }, function(data){
+                        console.log('response:',data);
+                        curDisplayText = data;
+                        $("#output").html(data);
+                        symbol.style.display="none"
+                    });
+                });
+
+            });
+        </script>
+    </head>
+    <body>
+        <script src="https://iris.alkamitech.com/cdn/iris/2.1.3/polyfill.min.js"></script>
+        <script src="https://iris.alkamitech.com/cdn/iris/2.1.3/popper.min.js"></script>
+        <script src="https://iris.alkamitech.com/cdn/iris/2.1.3/iris.min.js"></script>
+        <div style="text-align: center;">
+
+            <div class="iris-card iris-card--flat" data-size="large">
+                <div class="iris-card__header">
+                    <h4 class="iris-card__title">nCino Synergy Error Checker</h4>
+                </div>
+                <div class="iris-card__content">
+                    <div class="iris-dropdown" id="range-select" name="dropdown" placeholder="Select Range">
+                        <ul class="iris-options-list">
+                            <li class="iris-option" data-value="today"> Today </li>
+                            <li class="iris-option" data-value="yesterday"> Yesterday </li>
+                            <li class="iris-option" data-value="past7"> Past 7 Days </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="iris-card__footer flex-justify--end">
+                    <div id="loadingSymbol" style="display:none;">
+                        <span class="iris-loading" data-size="medium" role="status" aria-label="loading">
+                            <svg class="iris-loading-svg" viewBox="25 25 50 50">
+                                <circle class="iris-loading-path" cx="50" cy="50" r="20" />
+                            </svg>
+                        </span>
+                    </div>
+                    <button id="submit" class="iris-button iris-button--primary">
+                        <span class="iris-button__text">Fetch</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <br/>
+        <span id="output" style="font-size:15px"></span>
+
+    </body>
+</html>
