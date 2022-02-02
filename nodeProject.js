@@ -6,10 +6,18 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const parser = new xml2js.Parser();
 
-const fileLocation = '\\\\mwavsynergy\\synergy\\nCino\\{SYNAUTOIMP}\\ERROR\\';
+const basePath = '\\\\mwavsynergy\\synergy\\nCino\\{SYNAUTOIMP}';
+const successPath = basePath + "\\BACKUP\\";
+const errorPath = basePath + "\\ERROR\\";
 const router = express.Router();
 const path = require('path');
 const app = express();
+function fileLocation(searchErrors){
+    if( searchErrors && searchErrors !== "false" )
+        return errorPath;
+    return successPath;
+}
+var latestData;
 
 function parseXMLFile(xmlPath){
     let xmlObject = {};
@@ -26,7 +34,8 @@ function parseXMLFile(xmlPath){
                     let indexes = doc.Indexes;
                     let pages = doc.Pages;
                     xmlObject.DocName = doc.DocName[0];
-
+                    xmlObject.Cabinet = doc.Cabinet[0];
+                    xmlObject.Institution = doc.Institution[0];
                     //read location and ID
                     for( let l=0; l < pages.length; l ++ ){
                         let page = pages[l].Page;
@@ -54,27 +63,36 @@ function parseXMLFile(xmlPath){
     });
     return xmlObject
 }
-function readXMLs(startDate,endDate=Date.now()){
+function readXMLs(startDate,endDate=Date.now(),searchErrors){
     let resultObject = { outputString : '' };
     try{
-        console.log('readXMLs:',fileLocation)
-        let folders = fs.readdirSync(fileLocation,{withFileTypes :true})//,(err,files) => {
+        console.log('readXMLs:',fileLocation(searchErrors))
+        let folders = fs.readdirSync(fileLocation(searchErrors),{withFileTypes :true})//,(err,files) => {
+           // console.log('folders?',folders.length)
             folders.sort(function(a, b) {
-                return fs.statSync(fileLocation + b.name).mtime.getTime() - 
-                fs.statSync(fileLocation + a.name).mtime.getTime();
+                return fs.statSync(fileLocation(searchErrors) + b.name).mtime.getTime() - 
+                fs.statSync(fileLocation(searchErrors) + a.name).mtime.getTime();
             });
             for( let i=0; i < folders.length; i++ ){
                 let folder = folders[i];
-                let curLocation = fileLocation + '\\'+folder.name
+                let curLocation = fileLocation(searchErrors) + '\\'+folder.name
                 let directoryStats = fs.statSync(curLocation);
-                if( directoryStats.mtime.getTime() < startDate )
-                break;
+                console.log('mTime:',directoryStats.mtime.getTime(),'startDate:',startDate,' lessthan? ',directoryStats.mtime.getTime() < startDate);
+                console.log('mTime:',directoryStats.mtime.getTime(),'endDate:',endDate,'greaterthan?',directoryStats.mtime.getTime() > endDate);
+                console.log('curLocation:',curLocation)
+                if( directoryStats.mtime.getTime() <= startDate )
+                    break;
+                else if ( directoryStats.mtime.getTime() >= endDate )
+                    continue;
                 if( directoryStats.isDirectory() ){
                     //console.log(folder.name);
-                    let folderContents = fs.readdirSync(curLocation); 
+                    let folderContents = fs.readdirSync(curLocation);
                     folderContents.forEach(ent => {
+                        //console.log('ent:',ent);
                         if( ent.endsWith('.xml') ){
                             let xmlObject = parseXMLFile(curLocation+'\\'+ent);
+                            let fileStats = fs.statSync(curLocation+'\\'+ent);
+                            xmlObject.synergyFileDate = new Date(fileStats.mtime.getTime());
                             resultObject[xmlObject.DocID] = xmlObject;
                             //resultObject.outputString += xmlObject.DocID + ", " + xmlObject.NAME + ", " + xmlObject.DocName + "\n";
                         }
@@ -84,18 +102,34 @@ function readXMLs(startDate,endDate=Date.now()){
     }catch(err){ console.error(err); }
     return resultObject;
 };
-function buildOutputString(xmlObject,delim="\n"){
+function buildOutputTable(xmlObject,delim="\n"){
+    let outputString = "<table> <tr> <th>Document ID</th> <th>Name</th> <th>Document Name</th> <th>Institution</th> </tr>";
+    console.log('xmlObject:')
+    console.log(xmlObject)
+    for( let key in xmlObject ){
+        if( key !== 'outputString' ){
+            outputString += "<tr>";
+            outputString += "<td>"+xmlObject[key].DocID + "</td><td>" + xmlObject[key].NAME + "</td><td>" + xmlObject[key].DocName + "</td><td>" + xmlObject[key].Institution + "</td>";
+            outputString += "</tr>";
+        }
+    }
+    outputString += "</table>";
+    return outputString;
+}
+function buildOutputCSV(xmlObject,delim="\n"){
     let outputString = "";
-    for( let key in xmlObject )
-        outputString += xmlObject[key].DocID + ", " + xmlObject[key].NAME + ", " + xmlObject[key].DocName + delim;
+    for( let key in xmlObject ){
+        if( key !== 'outputString' )
+            outputString += xmlObject[key].DocID + ", " + xmlObject[key].NAME + ", " + xmlObject[key].DocName + delim;
+    }
     return outputString;
 }
 function saveLogFile(xmlObject){
     try{
-        let outputString = buildOutputString(xmlObject);
+        let outputString = buildOutputCSV(xmlObject);
         let logFile = __dirname + "\\output\\" + Date.now() + '.txt';
         fs.writeFileSync(logFile,outputString)
-        console.log('saved log file:',logFile)
+        console.log('saved log fileLocation + suffix;:',logFile)
     } catch(err){ console.error(err); }
 }
 function sendEmail(msg){
@@ -107,6 +141,7 @@ function sendEmail(msg){
         transporter.sendMail({
             from: '"nCino Synergy Monitor" <info@marinecu.com>', // sender address
             to: "casey.nitz@marinecu.com", // list of receivers
+            cc: "heidi.dearman@marinecu.com",
             subject: "Synergy Error Report", // Subject line
             html: "<h3>Errors occurred on the nCino Synergy AutoImport process for the following records:</h3>" + msg.replace('\n','<br/>'), // plain text body
         }).then((res) => {
@@ -119,7 +154,7 @@ function sendEmail(msg){
 }
 
 
-let watchLocation = fileLocation;
+let watchLocation = fileLocation(true);
 let newObjects = [];
 fs.watch(watchLocation,(eventType,filename) => {
     if (filename) {
@@ -134,7 +169,7 @@ function clearObjects(){
         newObjects = [];
         let xmlObject = {};
         objectSet.forEach((newFolder) => {
-            let curLocation = fileLocation + newFolder;
+            let curLocation = fileLocation(true) + newFolder;
             let fileInfo = fs.statSync(curLocation);
             //console.log(fileInfo.isDirectory());
             if( fileInfo.isDirectory() ){
@@ -148,9 +183,8 @@ function clearObjects(){
                 })
             }
         })
-        console.log(buildOutputString(xmlObject));
         if( Object.keys(xmlObject).length )
-            sendEmail(buildOutputString(xmlObject));
+            sendEmail(buildOutputCSV(xmlObject));
     }catch(err){ console.error(err); }
 }
 
@@ -168,19 +202,21 @@ function startServer(){
     });
 
     //Here we are configuring express to use body-parser as middle-ware.
-
-    router.post('/handle/:range',(req,res) => {
+    router.post('/getTable/:startDate/:endDate/:errorChecked',(req,res) => {
         //code to perform particular action.
         //To access POST variable use req.body()methods.
         console.log('handle post')
         console.log(req.params);
-        if( req.params && req.params.dateRange !== null ){
-            console.log('ah')
-            let xmlObject = readXMLs(new Date('January 10, 2022 00:00:00'))
-            res.end(buildOutputString(xmlObject,"<br/>"));
+        if( req.params && req.params.startDate !== null && req.params.endDate !== null ){
+            let xmlObject = readXMLs(new Date(req.params.startDate),new Date(req.params.endDate),req.params.errorChecked);
+            latestData = xmlObject;
+            res.end(buildOutputTable(xmlObject,"<br/>"));
         }
         else res.end("none");
     });
+    router.get('/getFile',(req,res) =>{
+        res.end(buildOutputCSV(latestData,"\n"))
+    })
     app.listen(3000,() => {
         console.log("Started on PORT 3000");
     })
