@@ -21,46 +21,48 @@ var latestData;
 
 function parseXMLFile(xmlPath){
     let xmlObject = {};
-    let xmlString = fs.readFileSync(xmlPath);
-    parser.parseString(xmlString, function (err, result) {
-
-        //console.log(result.FilingJob.Batch,'len:',result.FilingJob.Batch.length);
-        if( result.FilingJob.Batch ){
-            for( let j = 0; j < result.FilingJob.Batch.length; j++ ){
-                let bat = result.FilingJob.Batch[j];
-                let docs = bat.Document;
-                for( let k = 0; k < docs.length; k++ ){
-                    let doc = docs[k];
-                    let indexes = doc.Indexes;
-                    let pages = doc.Pages;
-                    xmlObject.DocName = doc.DocName[0];
-                    xmlObject.Cabinet = doc.Cabinet[0];
-                    xmlObject.Institution = doc.Institution[0];
-                    //read location and ID
-                    for( let l=0; l < pages.length; l ++ ){
-                        let page = pages[l].Page;
-                        page = page[0]['_'];
-                        xmlObject.DocLocation = page;
-                        xmlObject.DocID = page.substring(page.lastIndexOf("\\")+1,page.indexOf('.'));
-                    }
-                    //read document info
-                    for( let l=0; l < indexes.length; l ++ ){
-                        let idx = indexes[l];
-                        if( idx.Index ){
-                            idx = idx.Index;
-                            for( let m = 0; m < idx.length; m++ ){
-                                let obj = idx[m];
-                                xmlObject[obj['$'].Name] = obj['_']
+    try{
+        let xmlString = fs.readFileSync(xmlPath);
+        parser.parseString(xmlString, function (err, result) {
+            //console.log(result.FilingJob.Batch,'len:',result.FilingJob.Batch.length);
+            if( result && result.FilingJob && result.FilingJob.Batch ){
+                for( let j = 0; j < result.FilingJob.Batch.length; j++ ){
+                    let bat = result.FilingJob.Batch[j];
+                    let docs = bat.Document;
+                    for( let k = 0; k < docs.length; k++ ){
+                        let doc = docs[k];
+                        let indexes = doc.Indexes;
+                        let pages = doc.Pages;
+                        xmlObject.DocName = doc.DocName[0];
+                        xmlObject.Cabinet = doc.Cabinet[0];
+                        xmlObject.Institution = doc.Institution[0];
+                        //read location and ID
+                        for( let l=0; l < pages.length; l ++ ){
+                            let page = pages[l].Page;
+                            page = page[0]['_'];
+                            xmlObject.DocLocation = page;
+                            xmlObject.DocID = page.substring(page.lastIndexOf("\\")+1,page.indexOf('.'));
+                        }
+                        //read document info
+                        for( let l=0; l < indexes.length; l ++ ){
+                            let idx = indexes[l];
+                            if( idx.Index ){
+                                idx = idx.Index;
+                                for( let m = 0; m < idx.length; m++ ){
+                                    let obj = idx[m];
+                                    xmlObject[obj['$'].Name] = obj['_']
+                                }
                             }
                         }
+                        //xmlObject.outputString += DocID + ", " + xmlObject.NAME + ", " + xmlObject.DocName + "\n";
+                        //console.log()
                     }
-                    //xmlObject.outputString += DocID + ", " + xmlObject.NAME + ", " + xmlObject.DocName + "\n";
-                    //console.log()
                 }
             }
-        }
-        else console.error('error parsing XML')
-    });
+            else console.error('error parsing XML')
+        });
+    }catch(err){console.error(err)}
+
     return xmlObject
 }
 function readXMLs(startDate,endDate=Date.now(),searchErrors){
@@ -208,7 +210,9 @@ function startServer(){
         console.log('handle post')
         console.log(req.params);
         if( req.params && req.params.startDate !== null && req.params.endDate !== null ){
-            let xmlObject = readXMLs(new Date(req.params.startDate),new Date(req.params.endDate),req.params.errorChecked);
+            let endDate = new Date(req.params.endDate);
+            endDate.setDate(endDate.getDate() + 1);
+            let xmlObject = readXMLs(new Date(req.params.startDate),endDate,req.params.errorChecked);
             latestData = xmlObject;
             res.end(buildOutputTable(xmlObject,"<br/>"));
         }

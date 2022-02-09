@@ -99,6 +99,86 @@
                     <input type="date" id="start" name="trip-start"><br/>
                     <label for="end">End date:</label>
                     <input type="date" id="end" name="trip-end">
+                    <div class="iris-record flex--col">
+                        <div class="container-fluid" data-collapsable>
+                            <div class="row flex-items--center">
+                                <div class="col-11">
+                                    Select Fields to Display:
+                                </div>
+                                <div class="col-1">
+                                    <span class="iris-chevron"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="iris-collapsable width--100">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocID" checked />
+                                            <label class="iris-checkbox__label" for="DocID">
+                                                <span class="iris-checkbox__content">DocID</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocName" checked/>
+                                            <label class="iris-checkbox__label" for="DocName">
+                                                <span class="iris-checkbox__content">DocName</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Name" checked/>
+                                            <label class="iris-checkbox__label" for="Name">
+                                                <span class="iris-checkbox__content">Name</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocDate" checked/>
+                                            <label class="iris-checkbox__label" for="DocDate">
+                                                <span class="iris-checkbox__content">DocDate</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Cabinet" />
+                                            <label class="iris-checkbox__label" for="Cabinet">
+                                                <span class="iris-checkbox__content">Cabinet</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Institution" />
+                                            <label class="iris-checkbox__label" for="Institution">
+                                                <span class="iris-checkbox__content">Institution</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="DocLocation" id="Cabinet" />
+                                            <label class="iris-checkbox__label" for="DocLocation">
+                                                <span class="iris-checkbox__content">DocLocation</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="TaxID" />
+                                            <label class="iris-checkbox__label" for="TaxID">
+                                                <span class="iris-checkbox__content">TaxID</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="AcctNo" />
+                                            <label class="iris-checkbox__label" for="AcctNo">
+                                                <span class="iris-checkbox__content">AcctNo</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="synFileDate" />
+                                            <label class="iris-checkbox__label" for="synFileDate">
+                                                <span class="iris-checkbox__content">Synergy File Date</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="iris-card__footer flex-justify--end">
@@ -120,88 +200,6 @@
                 <span class="iris-button__icon font-icon-download" aria-hidden="true"></span>
                 <span class="iris-button__text">Download</span>
             </button>
-        </div>
-
-
-        <div class="iris-record flex--col">
-            <div class="container-fluid" data-collapsable>
-                <div class="row flex-items--center">
-                    <div class="col-11">
-                        Some helpful information.
-                    </div>
-                    <div class="col-1">
-                        <span class="iris-chevron"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="iris-collapsable width--100">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocID" checked />
-                                <label class="iris-checkbox__label" for="DocID">
-                                    <span class="iris-checkbox__content">DocID</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocName" checked/>
-                                <label class="iris-checkbox__label" for="DocName">
-                                    <span class="iris-checkbox__content">DocName</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Name" checked/>
-                                <label class="iris-checkbox__label" for="Name">
-                                    <span class="iris-checkbox__content">Name</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocDate" checked/>
-                                <label class="iris-checkbox__label" for="DocDate">
-                                    <span class="iris-checkbox__content">DocDate</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Cabinet" />
-                                <label class="iris-checkbox__label" for="Cabinet">
-                                    <span class="iris-checkbox__content">Cabinet</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Institution" />
-                                <label class="iris-checkbox__label" for="Institution">
-                                    <span class="iris-checkbox__content">Institution</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="DocLocation" id="Cabinet" />
-                                <label class="iris-checkbox__label" for="DocLocation">
-                                    <span class="iris-checkbox__content">DocLocation</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="TaxID" />
-                                <label class="iris-checkbox__label" for="TaxID">
-                                    <span class="iris-checkbox__content">TaxID</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="AcctNo" />
-                                <label class="iris-checkbox__label" for="AcctNo">
-                                    <span class="iris-checkbox__content">AcctNo</span>
-                                </label>
-                            </div>
-                            <div class="iris-checkbox">
-                                <input class="iris-checkbox__input" name="toppings" type="checkbox" id="synFileDate" />
-                                <label class="iris-checkbox__label" for="synFileDate">
-                                    <span class="iris-checkbox__content">Synergy File Date</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <br/>
