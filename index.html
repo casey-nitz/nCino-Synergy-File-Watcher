@@ -24,17 +24,32 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js">  </script>
         <script>
             $(document).ready(function(){
-                function getCurrentSelections(){}
+                let today = new Date();
+                document.getElementById('start').valueAsDate = today
+                document.getElementById('end').valueAsDate = today
+                const allFields = ["DocID","DocName","NAME","DOC DATE","Cabinet","Institution","DocLocation","TAX ID","ACCT NO","synFileDate"];
+                function getCurrentSelections(){
+                    let fieldList = [];
+                    allFields.forEach((field) => {
+                        console.log(field)
+                        let elem = document.getElementById(field);
+                        if( elem.checked )
+                            fieldList.push(field)
+                    })
+                    return fieldList;
+                }
                 var user,pass,latestData;
                 $("#submit").click(function(){
                     let startDate = document.getElementById('start').value;
                     let endDate = document.getElementById('end').value;
                     let errorChecked = document.getElementById('error_list').checked;
+                    let fieldList = getCurrentSelections();
+                    console.log('fieldList:',fieldList)
                     let params = {startDate,endDate,errorChecked};
                     console.log(params)
                     let symbol = document.getElementById('loadingSymbol');
                     symbol.style.display="";
-                    $.post("http://localhost:3000/getTable/"+startDate+"/"+endDate+"/"+errorChecked, params, function(data){
+                    $.post("http://localhost:3000/getTable/"+startDate+"/"+endDate+"/"+errorChecked+"/"+fieldList.join(','), params, function(data){
                         $("#output").html(data);
                         latestData = data;
                         let downloadDiv = document.getElementById('downloadDiv');
@@ -44,7 +59,8 @@
                 });
                 $("#downloadDiv").click(function(){
                     console.log('download!!');
-                    $.get("http://localhost:3000/getFile/",function(data){
+                    let fieldList = getCurrentSelections();
+                    $.post("http://localhost:3000/getFile/"+fieldList.join(','),function(data){
                         console.log('file data:',data);
                         var hiddenElement = document.createElement('a');
 
@@ -127,15 +143,15 @@
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Name" checked/>
-                                            <label class="iris-checkbox__label" for="Name">
-                                                <span class="iris-checkbox__content">Name</span>
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="NAME" checked/>
+                                            <label class="iris-checkbox__label" for="NAME">
+                                                <span class="iris-checkbox__content">NAME</span>
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocDate" checked/>
-                                            <label class="iris-checkbox__label" for="DocDate">
-                                                <span class="iris-checkbox__content">DocDate</span>
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DOC DATE" checked/>
+                                            <label class="iris-checkbox__label" for="DOC DATE">
+                                                <span class="iris-checkbox__content">DOC DATE</span>
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">
@@ -151,21 +167,21 @@
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="DocLocation" id="Cabinet" />
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocLocation" />
                                             <label class="iris-checkbox__label" for="DocLocation">
                                                 <span class="iris-checkbox__content">DocLocation</span>
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="TaxID" />
-                                            <label class="iris-checkbox__label" for="TaxID">
-                                                <span class="iris-checkbox__content">TaxID</span>
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="TAX ID" />
+                                            <label class="iris-checkbox__label" for="TAX ID">
+                                                <span class="iris-checkbox__content">TAX ID</span>
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="AcctNo" />
-                                            <label class="iris-checkbox__label" for="AcctNo">
-                                                <span class="iris-checkbox__content">AcctNo</span>
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="ACCT NO" />
+                                            <label class="iris-checkbox__label" for="ACCT NO">
+                                                <span class="iris-checkbox__content">ACCT NO</span>
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">

@@ -79,9 +79,9 @@ function readXMLs(startDate,endDate=Date.now(),searchErrors){
                 let folder = folders[i];
                 let curLocation = fileLocation(searchErrors) + '\\'+folder.name
                 let directoryStats = fs.statSync(curLocation);
-                console.log('mTime:',directoryStats.mtime.getTime(),'startDate:',startDate,' lessthan? ',directoryStats.mtime.getTime() < startDate);
-                console.log('mTime:',directoryStats.mtime.getTime(),'endDate:',endDate,'greaterthan?',directoryStats.mtime.getTime() > endDate);
-                console.log('curLocation:',curLocation)
+                //console.log('mTime:',directoryStats.mtime.getTime(),'startDate:',startDate,' lessthan? ',directoryStats.mtime.getTime() < startDate);
+                //console.log('mTime:',directoryStats.mtime.getTime(),'endDate:',endDate,'greaterthan?',directoryStats.mtime.getTime() > endDate);
+                //console.log('curLocation:',curLocation)
                 if( directoryStats.mtime.getTime() <= startDate )
                     break;
                 else if ( directoryStats.mtime.getTime() >= endDate )
@@ -94,7 +94,7 @@ function readXMLs(startDate,endDate=Date.now(),searchErrors){
                         if( ent.endsWith('.xml') ){
                             let xmlObject = parseXMLFile(curLocation+'\\'+ent);
                             let fileStats = fs.statSync(curLocation+'\\'+ent);
-                            xmlObject.synergyFileDate = new Date(fileStats.mtime.getTime());
+                            xmlObject.synFileDate = new Date(fileStats.mtime.getTime());
                             resultObject[xmlObject.DocID] = xmlObject;
                             //resultObject.outputString += xmlObject.DocID + ", " + xmlObject.NAME + ", " + xmlObject.DocName + "\n";
                         }
@@ -104,25 +104,51 @@ function readXMLs(startDate,endDate=Date.now(),searchErrors){
     }catch(err){ console.error(err); }
     return resultObject;
 };
-function buildOutputTable(xmlObject,delim="\n"){
-    let outputString = "<table> <tr> <th>Document ID</th> <th>Name</th> <th>Document Name</th> <th>Institution</th> </tr>";
-    console.log('xmlObject:')
-    console.log(xmlObject)
+function buildOutputTable(xmlObject,delim="\n",fieldList){
+    let outputString = "<table> <tr>"
+    fieldList.forEach((field) =>{
+        outputString += "<th>" + field + "</th>";
+    })
+    outputString += "</tr>"
+    "<th>Document ID</th> <th>Name</th> <th>Document Name</th> <th>Institution</th> </tr>";
+    console.log('fieldList:')
+    console.log(fieldList)
     for( let key in xmlObject ){
         if( key !== 'outputString' ){
-            outputString += "<tr>";
-            outputString += "<td>"+xmlObject[key].DocID + "</td><td>" + xmlObject[key].NAME + "</td><td>" + xmlObject[key].DocName + "</td><td>" + xmlObject[key].Institution + "</td>";
-            outputString += "</tr>";
+            outputString += "<tr>"
+            fieldList.forEach((field) => {
+                outputString += "<td>" + xmlObject[key][field] + "</td>"
+            })
+            outputString += "</tr>"
+            // outputString += "<tr>";
+            // outputString += "<td>"+xmlObject[key].DocID + "</td><td>" + xmlObject[key].NAME + "</td><td>" + xmlObject[key].DocName + "</td><td>" + xmlObject[key].Institution + "</td>";
+            // outputString += "</tr>";
         }
     }
     outputString += "</table>";
     return outputString;
 }
-function buildOutputCSV(xmlObject,delim="\n"){
-    let outputString = "";
+function buildOutputCSV(xmlObject,delim="\n",fieldList){
+    let outputString = fieldList + delim;
+    fieldList = fieldList.split(',');
     for( let key in xmlObject ){
-        if( key !== 'outputString' )
-            outputString += xmlObject[key].DocID + ", " + xmlObject[key].NAME + ", " + xmlObject[key].DocName + delim;
+        if( key !== 'outputString' ){
+            let obj = xmlObject[key];
+            fieldList.forEach((field,i) => {
+                let curValue = obj[field];
+                if( i !== 0 ) outputString +=',';
+                if( typeof curValue == "string" )
+                    outputString += obj[field].replaceAll(',',' ')
+                else if( field == 'synFileDate' ){
+                    curValue = new Date(curValue);
+                    outputString += curValue.toDateString();
+                }
+                    
+            })
+            if( fieldList.length !== 0 )
+                outputString+='\n';
+            //outputString += xmlObject[key].DocID + ", " + xmlObject[0.].NAME + ", " + xmlObject[key].DocName + delim;
+        }
     }
     return outputString;
 }
@@ -204,7 +230,7 @@ function startServer(){
     });
 
     //Here we are configuring express to use body-parser as middle-ware.
-    router.post('/getTable/:startDate/:endDate/:errorChecked',(req,res) => {
+    router.post('/getTable/:startDate/:endDate/:errorChecked/:fieldList',(req,res) => {
         //code to perform particular action.
         //To access POST variable use req.body()methods.
         console.log('handle post')
@@ -214,17 +240,18 @@ function startServer(){
             endDate.setDate(endDate.getDate() + 1);
             let xmlObject = readXMLs(new Date(req.params.startDate),endDate,req.params.errorChecked);
             latestData = xmlObject;
-            res.end(buildOutputTable(xmlObject,"<br/>"));
+            res.end(buildOutputTable(xmlObject,"<br/>",req.params.fieldList.split(',')));
         }
         else res.end("none");
     });
-    router.get('/getFile',(req,res) =>{
-        res.end(buildOutputCSV(latestData,"\n"))
+    router.post('/getFile/:fieldList',(req,res) =>{
+        res.end(buildOutputCSV(latestData,"\n",req.params.fieldList))
     })
     app.listen(3000,() => {
         console.log("Started on PORT 3000");
     })
 }
 
-setInterval(clearObjects,30 * 60 * 1000);
+
+setInterval(clearObjects,900000);
 startServer();
