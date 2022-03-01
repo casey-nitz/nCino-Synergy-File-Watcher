@@ -27,7 +27,7 @@
                 let today = new Date();
                 document.getElementById('start').valueAsDate = today
                 document.getElementById('end').valueAsDate = today
-                const allFields = ["DocID","DocName","NAME","DOC DATE","Cabinet","Institution","DocLocation","TAX ID","ACCT NO","synFileDate"];
+                const allFields = ["DocID","DocName","NAME","DOC DATE","Cabinet","Type","Institution","DocLocation","TAX ID","ACCT NO","synFileDate"];
                 function getCurrentSelections(){
                     let fieldList = [];
                     allFields.forEach((field) => {
@@ -42,14 +42,18 @@
                 $("#submit").click(function(){
                     let startDate = document.getElementById('start').value;
                     let endDate = document.getElementById('end').value;
+                    startDate = new Date(startDate);
+                    startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset())
+                    endDate = new Date(endDate);
+                    endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset() + 1440)
+
+                    console.log(startDate.toLocaleString())
                     let errorChecked = document.getElementById('error_list').checked;
                     let fieldList = getCurrentSelections();
                     console.log('fieldList:',fieldList)
-                    let params = {startDate,endDate,errorChecked};
-                    console.log(params)
                     let symbol = document.getElementById('loadingSymbol');
                     symbol.style.display="";
-                    $.post("http://mwavalkami:3000/getTable/"+startDate+"/"+endDate+"/"+errorChecked+"/"+fieldList.join(','), params, function(data){
+                    $.post("http://mwavalkami:3000/getTable/"+startDate.getTime()+"/"+endDate.getTime()+"/"+errorChecked+"/"+fieldList.join(','), {}, function(data){
                         $("#output").html(data);
                         latestData = data;
                         let downloadDiv = document.getElementById('downloadDiv');
@@ -61,7 +65,7 @@
                     console.log('download!!');
                     let fieldList = getCurrentSelections();
                     $.post("http://mwavalkami:3000/getFile/"+fieldList.join(','),function(data){
-                        console.log('file data:',data);
+                        //console.log('file data:',data);
                         var hiddenElement = document.createElement('a');
 
                         hiddenElement.href = 'data:attachment/text,' + encodeURI(data);
@@ -158,6 +162,12 @@
                                             <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Cabinet" />
                                             <label class="iris-checkbox__label" for="Cabinet">
                                                 <span class="iris-checkbox__content">Cabinet</span>
+                                            </label>
+                                        </div>
+                                        <div class="iris-checkbox">
+                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Type" />
+                                            <label class="iris-checkbox__label" for="Type">
+                                                <span class="iris-checkbox__content">Type</span>
                                             </label>
                                         </div>
                                         <div class="iris-checkbox">

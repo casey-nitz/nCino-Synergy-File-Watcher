@@ -36,6 +36,7 @@ function parseXMLFile(xmlPath){
                         xmlObject.DocName = doc.DocName[0];
                         xmlObject.Cabinet = doc.Cabinet[0];
                         xmlObject.Institution = doc.Institution[0];
+                        xmlObject.Type = doc.Type[0];
                         //read location and ID
                         for( let l=0; l < pages.length; l ++ ){
                             let page = pages[l].Page;
@@ -70,7 +71,7 @@ function readXMLs(startDate,endDate=Date.now(),searchErrors){
     try{
         console.log('readXMLs:',fileLocation(searchErrors))
         let folders = fs.readdirSync(fileLocation(searchErrors),{withFileTypes :true})//,(err,files) => {
-           // console.log('folders?',folders.length)
+            //console.log('folders?',folders.length)
             folders.sort(function(a, b) {
                 return fs.statSync(fileLocation(searchErrors) + b.name).mtime.getTime() - 
                 fs.statSync(fileLocation(searchErrors) + a.name).mtime.getTime();
@@ -82,10 +83,18 @@ function readXMLs(startDate,endDate=Date.now(),searchErrors){
                 //console.log('mTime:',directoryStats.mtime.getTime(),'startDate:',startDate,' lessthan? ',directoryStats.mtime.getTime() < startDate);
                 //console.log('mTime:',directoryStats.mtime.getTime(),'endDate:',endDate,'greaterthan?',directoryStats.mtime.getTime() > endDate);
                 //console.log('curLocation:',curLocation)
-                if( directoryStats.mtime.getTime() <= startDate )
+                if( directoryStats.mtime.getTime() <= startDate ){
+                    //console.log('doc too early:',folder)
                     break;
-                else if ( directoryStats.mtime.getTime() >= endDate )
+                }
+                else if ( directoryStats.mtime.getTime() >= endDate ){
+
+                    //console.log('doc too late:',folder)
+                    //console.log('mTime:',directoryStats.mtime.getTime(),'startDate:',startDate,' lessthan? ',directoryStats.mtime.getTime() < startDate,'reformatted:',startDate.getTime());
+                    //console.log('mTime:',directoryStats.mtime.getTime(),'endDate:',endDate,'greaterthan?',directoryStats.mtime.getTime() > endDate,'reformatted:',endDate.getTime());
+                    //console.log('curLocation:',curLocation)
                     continue;
+                }
                 if( directoryStats.isDirectory() ){
                     //console.log(folder.name);
                     let folderContents = fs.readdirSync(curLocation);
@@ -236,9 +245,7 @@ function startServer(){
         console.log('handle post')
         console.log(req.params);
         if( req.params && req.params.startDate !== null && req.params.endDate !== null ){
-            let endDate = new Date(req.params.endDate);
-            endDate.setDate(endDate.getDate() + 1);
-            let xmlObject = readXMLs(new Date(req.params.startDate),endDate,req.params.errorChecked);
+            let xmlObject = readXMLs(req.params.startDate,req.params.endDate,req.params.errorChecked);
             latestData = xmlObject;
             res.end(buildOutputTable(xmlObject,"<br/>",req.params.fieldList.split(',')));
         }
