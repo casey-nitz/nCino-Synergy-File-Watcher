@@ -252,5 +252,6 @@ function startServer(){
     })
 }
 
+
 setInterval(clearObjects,900000);
 startServer();

@@ -49,7 +49,7 @@
                     console.log(params)
                     let symbol = document.getElementById('loadingSymbol');
                     symbol.style.display="";
-                    $.post("http://localhost:3000/getTable/"+startDate+"/"+endDate+"/"+errorChecked+"/"+fieldList.join(','), params, function(data){
+                    $.post("http://mwavalkami:3000/getTable/"+startDate+"/"+endDate+"/"+errorChecked+"/"+fieldList.join(','), params, function(data){
                         $("#output").html(data);
                         latestData = data;
                         let downloadDiv = document.getElementById('downloadDiv');
@@ -60,7 +60,7 @@
                 $("#downloadDiv").click(function(){
                     console.log('download!!');
                     let fieldList = getCurrentSelections();
-                    $.post("http://localhost:3000/getFile/"+fieldList.join(','),function(data){
+                    $.post("http://mwavalkami:3000/getFile/"+fieldList.join(','),function(data){
                         console.log('file data:',data);
                         var hiddenElement = document.createElement('a');
 
