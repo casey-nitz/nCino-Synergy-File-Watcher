@@ -8,22 +8,25 @@ module.exports = (() => {
     let _ = new Map();
     class FilingJobInfo {
         static parseFromXMLFile( xmlPath ){
-            let xmlString = fs.readFileSync(xmlPath);
-            let newFilingJob = null;
-            parser.parseString(xmlString, function (err, result) {
-                if( err ) throw new Error(err);
-                if( result && result.FilingJob ){
-                   // console.log('result:',result);
-                    newFilingJob = new FilingJobInfo( xmlPath );
-                    if( result.FilingJob.Batch ){
-                        for( let i=0; i < result.FilingJob.Batch.length; i++ ){
-                            newFilingJob.addBatch( BatchInfo.mkFromParsedXML( result.FilingJob.Batch[i] ) );
+            try{
+
+                let xmlString = fs.readFileSync(xmlPath);
+                let newFilingJob = null;
+                parser.parseString(xmlString, function (err, result) {
+                    if( err ) throw new Error(err);
+                    if( result && result.FilingJob ){
+                        // console.log('result:',result);
+                        newFilingJob = new FilingJobInfo( xmlPath );
+                        if( result.FilingJob.Batch ){
+                            for( let i=0; i < result.FilingJob.Batch.length; i++ ){
+                                newFilingJob.addBatch( BatchInfo.mkFromParsedXML( result.FilingJob.Batch[i] ) );
                         }
                     }
                 }
                 else throw new Error("Batch XML invalid format");
             });
             return newFilingJob;
+        }catch(err){ errTracer(CLASSNAME,'parseFromXMLFile',err) }
         }
 
         constructor( xmlPath ){

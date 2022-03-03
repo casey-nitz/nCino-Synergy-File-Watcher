@@ -6,25 +6,22 @@ const parser = new xml2js.Parser();
 module.exports = (() => {
     let _ = new Map();
     class IndexInfo {
-        mkFromParsedXML( obj ){
-            
-        }
         constructor( name, value ){
             try{
                 let obj = {
-                    name : is(name,"string","name"),
-                    value : is(value,"string","value")
+                    Name : is(name,"string","name"),
+                    Value : is(value,"string","value")
                 }
                 _.set(this,obj);
             }catch(err){ errTracer()}
         }
-        get name(){ return _.get(this).name; }
-        set name( which ){
-            _.get(this).name = is(which,"string","name")
+        get Name(){ return _.get(this).Name; }
+        set Name( which ){
+            _.get(this).Name = is(which,"string","Name")
         }
-        get value(){ return this.value; }
-        set value( which ){
-            _.get(this).value = is(which,"string","value")
+        get Value(){ return _.get(this).Value; }
+        set Value( which ){
+            _.get(this).Value = is(which,"string","Value")
         }
     }
     return IndexInfo;
