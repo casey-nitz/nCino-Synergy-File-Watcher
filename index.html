@@ -67,6 +67,12 @@
                 $("#submit").click(function(){
                     let startDate = document.getElementById('start').value;
                     let endDate = document.getElementById('end').value;
+                    startDate = new Date(startDate);
+                    startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset())
+                    endDate = new Date(endDate);
+                    endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset() + 1440)
+
+                    console.log(startDate.toLocaleString())
                     let errorChecked = document.getElementById('error_list').checked;
                     let fieldList = getCurrentSelections();
                     //console.log('fieldList:',fieldList)
