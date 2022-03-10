@@ -5,7 +5,7 @@ const IndexInfo = require('./indexinfo');
 const parser = new xml2js.Parser();
 
 module.exports = (() => {
-    let _ = new Map();
+    let _ = new WeakMap();
     class DocumentInfo {
         static mkFromParsedXML( obj ){
             try{
@@ -41,8 +41,6 @@ module.exports = (() => {
                 ["DocName","Cabinet","Institution","DocLocation","Type","SeqNum"].forEach((val) => {
                     if( obj[val] ){
                         constructorObj[val] = is(obj[val],"string",val);
-                        if( val == "DocLocation" )
-                            constructorObj["DocID"] = obj[val].substring(obj[val].lastIndexOf("\\")+1,obj[val].indexOf('.'))
                     }
                 });
                 _.set(this,constructorObj);
@@ -78,18 +76,12 @@ module.exports = (() => {
                 _.get(this).Institution = is(which,"string","Institution")
             }catch(err){ errTracer(CLASSNAME,'setInstitution',err); }
         }
-
         get Indexes(){ return _.get(this).Indexes }
         addIndex( name, value ){
             try{
                 _.get(this).Indexes.push( new IndexInfo(  is(name,"string","indexname"), is(value,"string","indexvalue")));
             }catch(err){ errTracer(CLASSNAME,'addIndex',err); }
         }
-        // delIndex( name ){
-        //     try{
-        //         _.get(this).Indexes[is(name,"string","indexname")] = undefined;
-        //     }catch(err){ errTracer(CLASSNAME,'delIndex',err); }
-        // }
     }
     return DocumentInfo;
 })();

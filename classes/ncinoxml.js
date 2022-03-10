@@ -1,18 +1,94 @@
 const { is, errTracer } = require('./utilities');
 const CLASSNAME = 'nCinoXML';
 const FilingJobInfo = require('./filingjobinfo');
-const FIELDS = ["BatchName","DocName","Cabinet","Institution","DocLocation","DocID","DocName","DocDate","Institution","Cabinet","Type","AcctNo","TaxID","Name","SynergyFileDate"];
+const FIELDS = ["BatchName","DocName","DocLocation","DocID","DocDate","Institution","Cabinet","Type","AcctNo","TaxID","Name","SynergyFileDate"];
+const fs = require('fs');
+
+const basePath = '\\\\mwavsynergy\\synergy\\nCino\\{SYNAUTOIMP}';
+const successPath = basePath + "\\BACKUP\\";
+const errorPath = basePath + "\\ERROR\\";
 
 module.exports = (() => {
-    let _ = new Map();
+    let _ = new WeakMap();
     class nCinoXML {
-        static getFieldList(){ return FIELDS; }
-        static parseFromXMLFile( xmlPath ){
+        static fileLocation(searchErrors){
+            if( searchErrors && searchErrors !== "false" )
+                return errorPath;
+            return successPath;
+        }
+        static buildFromFolder( startDate, endDate, searchErrors ){
+            return new Promise((resolve,reject) => {
+                try{
+                    let folders = fs.readdirSync(this.fileLocation(searchErrors),{withFileTypes :true});
+                    let folderStats = {};
+                    let readerQueue = [];
+                    let resultList = [];
+                    folders.forEach((f) => {
+                        readerQueue.push( new Promise((res,rej) => {
+                            //console.log('pushing:')
+                            let fileLoc = this.fileLocation(searchErrors)+'\\'+ f.name
+                            fs.stat(fileLoc,(err,stats)=>{
+                                if( err ){
+                                    rej(errTracer(CLASSNAME,`fs.stat(${f.name})`,err));
+                                }else{
+                                    folderStats[f.name] = stats;
+                                    //console.log('resolving')
+                                    res();
+                                }
+                            })
+                        }) );
+                    })
+                    //console.log('waiting for promises:',readerQueue.length);
+                    Promise.all(readerQueue).then(() => {
+                        let readerQueue2 = [];
+                        //console.log('done reading');
+                        folders.sort((a,b) => {
+                            return folderStats[b.name].mtime.getTime() - folderStats[a.name].mtime.getTime()
+                        })
+                        for( let i = 0; i < folders.length; i++ ){
+                            let folder = folders[i];
+                            let curLocation = this.fileLocation(searchErrors)+'\\'+folder.name;
+                            let curStats = folderStats[folder.name];
+                            if( curStats.mtime.getTime() <= startDate )
+                                break;
+                            else if( curStats.mtime.getTime() >= endDate )
+                                continue;
+                            else if( curStats.isDirectory() ){
+                                readerQueue2.push( new Promise((res,rej) => {
+                                    fs.readdir(curLocation,(err,stats) => {
+                                        if( err ) rej(err);
+                                        else{
+                                            stats.forEach((ent) => {
+                                                if( ent.endsWith('.xml') ){
+                                                    let obj = this.buildFromXMLFile(curLocation+'\\'+ent);
+                                                    fs.stat(curLocation+'\\'+ent,(e,s) => {
+                                                        if( e ) rej(e);
+                                                        else{
+                                                            obj.SynergyFileDate = s.mtime.getTime();
+                                                            resultList.push(obj);
+                                                            res();
+                                                        }
+                                                    })
+                                                }
+                                            })
+                                        }
+                                    })
+                                }))
+                            }
+                        }
+                        //console.log('waiting pt 2:',readerQueue2.length);
+                        return Promise.all(readerQueue2).then(() => resolve(resultList)).catch((err) => rej(errTracer(CLASSNAME,'buildFromFolder',err)))
+                    }).catch((err) => reject(errTracer(CLASSNAME,'buildFromFolder',err)));
+                }catch(err){ reject(errTracer(CLASSNAME,'buildFromFolder',err)); }
+            })
+        }
+        static buildFromXMLFile( xmlPath ){
             try{
-                let fj = FilingJobInfo.parseFromXMLFile( xmlPath );
+                let fj = FilingJobInfo.buildFromXMLFile( xmlPath );
                 let nCinoObj = {
                     FilingJob : fj,
-                    DocLocation : fj.FileLocation
+                    DocLocation : fj.FileLocation,
+                    DocID : fj.DocID
                 };
                 if( Object.values(fj.Batches).length !== 1 )
                     throw new Error('Invalid nCino XML structure: batch count');
@@ -40,15 +116,16 @@ module.exports = (() => {
                     }
                 }
                 return new nCinoXML( nCinoObj );
-            }catch(err){ errTracer(CLASSNAME,'parseFromXMLFile',err); }
+            }catch(err){ errTracer(CLASSNAME,'buildFromXMLFile',err); }
         }
+        static getFieldList(){ return FIELDS; }
 
         constructor( obj ){
             try{
                 let constructorObj = {};
                 FIELDS.forEach((field) => {
                     if( obj[field] !== null && obj[field] !== undefined )
-                        constructorObj[field] = is(obj[field],'string',field)
+                        constructorObj[field] = is(obj[field],field =="SynergyFileDate" ? 'date' : 'string',field)
                 });
                 if( obj.FilingJob )
                     constructorObj.FilingJob = obj.FilingJob;
@@ -130,7 +207,7 @@ module.exports = (() => {
         get SynergyFileDate(){ return _.get(this).SynergyFileDate; }
         set SynergyFileDate(which){
             try{
-                _.get(this).SynergyFileDate = is(which,'string','SynergyFileDate');
+                _.get(this).SynergyFileDate = is(which,'number','SynergyFileDate');
             }catch(err){ errTracer(CLASSNAME,'setSynergyFileDate',err); }
         }
     }

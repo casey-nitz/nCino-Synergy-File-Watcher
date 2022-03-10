@@ -4,7 +4,7 @@ const xml2js = require('xml2js');
 const parser = new xml2js.Parser();
 
 module.exports = (() => {
-    let _ = new Map();
+    let _ = new WeakMap();
     class IndexInfo {
         constructor( name, value ){
             try{

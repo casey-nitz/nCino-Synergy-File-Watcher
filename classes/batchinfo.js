@@ -3,7 +3,7 @@ const CLASSNAME = 'BatchInfo';
 const DocumentInfo = require('./documentinfo')
 
 module.exports = (() => {
-    let _ = new Map();
+    let _ = new WeakMap();
     class BatchInfo {
         static mkFromParsedXML( batchObj ){
             let constructorObject = {};

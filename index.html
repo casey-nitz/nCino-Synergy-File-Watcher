@@ -23,15 +23,40 @@
         </style>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js">  </script>
         <script>
+            //const SERVERPATH = "http://mwavalkami:3000/";
+            const SERVERPATH = "http://localhost:3000/"
             $(document).ready(function(){
                 let today = new Date();
                 document.getElementById('start').valueAsDate = today
-                document.getElementById('end').valueAsDate = today
-                const allFields = ["DocID","DocName","NAME","DOC DATE","Cabinet","Institution","DocLocation","TAX ID","ACCT NO","synFileDate"];
+                document.getElementById('end').valueAsDate = today;
+                let buildCheckboxHTML = (fieldName) => {
+                    return  `<div class="iris-checkbox">
+                        <input class="iris-checkbox__input" name="${fieldName}" type="checkbox" id="${fieldName}" ${fieldName == "DocID" || fieldName == "SynergyFileDate" ? "checked" : ""} />
+                        <label class="iris-checkbox__label" for="${fieldName}">
+                            <span class="iris-checkbox__content">${fieldName}</span>
+                        </label>
+                    </div>`
+                }
+                let allFields = [];
+                $.get(SERVERPATH+"getFields/",function(data){
+                    //console.log('GETFIELDS RES:',data);
+                    if( data && typeof data == "string" ){
+                        allFields = data.split(',');
+                        let fieldHTML = "";
+                        allFields.forEach((ent) => {
+                            fieldHTML += buildCheckboxHTML(ent);
+                        })   
+                        let div = document.getElementById('fielddropdown');
+                        div.innerHTML = fieldHTML;
+                    }
+                    //console.log('allFields:',allFields)
+                });
+
+                //const allFields = ["DocID","DocName","NAME","DOC DATE","Cabinet","Institution","DocLocation","TAX ID","ACCT NO","synFileDate"];
                 function getCurrentSelections(){
                     let fieldList = [];
                     allFields.forEach((field) => {
-                        console.log(field)
+                        //console.log(field)
                         let elem = document.getElementById(field);
                         if( elem.checked )
                             fieldList.push(field)
@@ -44,24 +69,30 @@
                     let endDate = document.getElementById('end').value;
                     let errorChecked = document.getElementById('error_list').checked;
                     let fieldList = getCurrentSelections();
-                    console.log('fieldList:',fieldList)
+                    //console.log('fieldList:',fieldList)
                     let params = {startDate,endDate,errorChecked};
-                    console.log(params)
+                    //console.log(params)
                     let symbol = document.getElementById('loadingSymbol');
                     symbol.style.display="";
-                    $.post("http://mwavalkami:3000/getTable/"+startDate+"/"+endDate+"/"+errorChecked+"/"+fieldList.join(','), params, function(data){
+                    $.post(SERVERPATH+"getTable/"+startDate+"/"+endDate+"/"+errorChecked+"/"+fieldList.join(','), params, function(data){
+                        //console.log('data:');
+                        //console.log(data);
                         $("#output").html(data);
                         latestData = data;
                         let downloadDiv = document.getElementById('downloadDiv');
-                        downloadDiv.style.display="";
-                        symbol.style.display="none"
+                        let headerDiv = document.getElementById('headerDiv');
+                        headerDiv.style.display="";
+                        symbol.style.display="none";
+                        let numRows = document.getElementById("tblOutputBuilder").rows.length;
+                        let docCounter = document.getElementById('docCounter')
+                        docCounter.innerText = "Total Document Count: " + (numRows-1);
                     });
                 });
                 $("#downloadDiv").click(function(){
-                    console.log('download!!');
+                    //console.log('download!!');
                     let fieldList = getCurrentSelections();
-                    $.post("http://mwavalkami:3000/getFile/"+fieldList.join(','),function(data){
-                        console.log('file data:',data);
+                    $.post(SERVERPATH+"getFile/"+fieldList.join(','),function(data){
+                        //console.log('file data:',data);
                         var hiddenElement = document.createElement('a');
 
                         hiddenElement.href = 'data:attachment/text,' + encodeURI(data);
@@ -129,68 +160,7 @@
                         <div class="iris-collapsable width--100">
                             <div class="container-fluid">
                                 <div class="row">
-                                    <div class="col-12">
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocID" checked />
-                                            <label class="iris-checkbox__label" for="DocID">
-                                                <span class="iris-checkbox__content">DocID</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocName" checked/>
-                                            <label class="iris-checkbox__label" for="DocName">
-                                                <span class="iris-checkbox__content">DocName</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="NAME" checked/>
-                                            <label class="iris-checkbox__label" for="NAME">
-                                                <span class="iris-checkbox__content">NAME</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DOC DATE" checked/>
-                                            <label class="iris-checkbox__label" for="DOC DATE">
-                                                <span class="iris-checkbox__content">DOC DATE</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Cabinet" />
-                                            <label class="iris-checkbox__label" for="Cabinet">
-                                                <span class="iris-checkbox__content">Cabinet</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="Institution" />
-                                            <label class="iris-checkbox__label" for="Institution">
-                                                <span class="iris-checkbox__content">Institution</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="DocLocation" />
-                                            <label class="iris-checkbox__label" for="DocLocation">
-                                                <span class="iris-checkbox__content">DocLocation</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="TAX ID" />
-                                            <label class="iris-checkbox__label" for="TAX ID">
-                                                <span class="iris-checkbox__content">TAX ID</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="ACCT NO" />
-                                            <label class="iris-checkbox__label" for="ACCT NO">
-                                                <span class="iris-checkbox__content">ACCT NO</span>
-                                            </label>
-                                        </div>
-                                        <div class="iris-checkbox">
-                                            <input class="iris-checkbox__input" name="toppings" type="checkbox" id="synFileDate" />
-                                            <label class="iris-checkbox__label" for="synFileDate">
-                                                <span class="iris-checkbox__content">Synergy File Date</span>
-                                            </label>
-                                        </div>
-                                    </div>
+                                    <div class="col-12" id="fielddropdown"></div>
                                 </div>
                             </div>
                         </div>
@@ -211,11 +181,14 @@
                 </div>
             </div>
         </div>
-        <div style="text-align: right; display:none;" id="downloadDiv">
-            <button class="iris-button iris-button--action">
-                <span class="iris-button__icon font-icon-download" aria-hidden="true"></span>
-                <span class="iris-button__text">Download</span>
-            </button>
+        <div style="text-align: right; display:none;" id="headerDiv">
+            <span style='left:0; top:50%' id="docCounter"></span>
+            <div id="downloadDiv">
+                <button class="iris-button iris-button--action">
+                    <span class="iris-button__icon font-icon-download" aria-hidden="true"></span>
+                    <span class="iris-button__text">Download</span>
+                </button>
+            </div>
         </div>
 
         <br/>
