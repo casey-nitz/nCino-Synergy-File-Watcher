@@ -17,7 +17,9 @@ module.exports = {
         }
     },
     errTracer(className,fxnName,err){
-        throw new Error('Error in ' + className + " attempting to execute function " + fxnName + " : " + err);
+        let newErr = new Error('\nError in ' + className + " attempting to execute function " + fxnName);
+        newErr.stack += err.stack;
+        throw newErr;
     },
     PROJECTDIR : "C:\\Users\\cnitz\\Documents\\GitHub\\nCino-Synergy-File-Watcher\\"
 };
