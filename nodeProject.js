@@ -224,17 +224,17 @@ const EmailController = require('./classes/emailctl');
 const nCinoXMl = require('./classes/ncinoxml');
 const OutputBuilder = require('./classes/outputbuilder');
 const TimedFileQueueController = require('./classes/timedfilequeuectl');
-const errorLoc = 'C:\\Users\\cnitz\\Documents\\workspace\\nCino-Synergy-File-Watcher\\scratch\\ERROR';
-const successLoc = 'C:\\Users\\cnitz\\Documents\\workspace\\nCino-Synergy-File-Watcher\\scratch\\SUCCESS';
+const errorLoc = '\\\\mwavsynergy\\synergy\\nCino\\{SYNAUTOIMP}\\ERROR';//'C:\\Users\\cnitz\\Documents\\workspace\\nCino-Synergy-File-Watcher\\scratch\\ERROR';
+const successLoc = '\\\\mwavsynergy\\synergy\\nCino\\{SYNAUTOIMP}\\BACKUP';//'C:\\Users\\cnitz\\Documents\\workspace\\nCino-Syner+gy-File-Watcher\\scratch\\SUCCESS';
 const emailRecipients = "casey.nitz@marinecu.com";
 const path = require('path')
 
 let sctl = new ServerController();
 sctl.setupServer();
 
-let errorFileQueue = new TimedFileQueueController( [errorLoc], 15000 )
+let errorFileQueue = new TimedFileQueueController( [errorLoc], 1000 * 60 * 15  )
 errorFileQueue.on('files',(d) => {
-    //console.log('errorFileQueue files:',d);
+    console.log('errorFileQueue files:',d);
     let objList = [];
     if( d && d[errorLoc].length !== 0 ){
         console.log('Error messages received. Sending email');
@@ -242,13 +242,14 @@ errorFileQueue.on('files',(d) => {
             let f = d[errorLoc][i]
             objList.push( nCinoXMl.buildFromXMLFile(path.join(errorLoc, f)) );
         }
+        //.log('objList:',objList);
         let msg = OutputBuilder.returnHTMLTable( objList, ['DocID','DocName',"Name","SynergyFileDate"] );
         //console.log('msg:',msg);
         EmailController.SendEmail( emailRecipients, "Synergy Warning: Error Received","<h3>Errors occurred on the nCino Synergy AutoImport process for the following records:</h3><br/>" + msg)
     }
 });
 
-let doubleFileQueue = new TimedFileQueueController( [errorLoc,successLoc], 15000 );
+let doubleFileQueue = new TimedFileQueueController( [errorLoc,successLoc], 1000 * 60 * 60 * 24 );
 doubleFileQueue.on('files',(d) => {
     if( d && d[errorLoc].length == 0 && d[successLoc].length == 0 ){
         console.log('No files came in within the given timeframe. Sending error email');

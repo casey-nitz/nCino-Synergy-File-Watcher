@@ -58,6 +58,7 @@ module.exports = (() => {
                                     fs.readdir(curLocation,(err,stats) => {
                                         if( err ) rej(err);
                                         else{
+                                            //console.log('stats:',stats)
                                             stats.forEach((ent) => {
                                                 if( ent.endsWith('.xml') ){
                                                     let obj = this.buildFromXMLFile(curLocation+'\\'+ent);
@@ -115,6 +116,9 @@ module.exports = (() => {
                         default: continue;
                     }
                 }
+                let stat = fs.statSync(xmlPath);
+                if( stat )
+                    nCinoObj.SynergyFileDate = stat.mtime.getTime();
                 return new nCinoXML( nCinoObj );
             }catch(err){ errTracer(CLASSNAME,'buildFromXMLFile',err); }
         }
@@ -125,7 +129,7 @@ module.exports = (() => {
                 let constructorObj = {};
                 FIELDS.forEach((field) => {
                     if( obj[field] !== null && obj[field] !== undefined )
-                        constructorObj[field] = is(obj[field],field =="SynergyFileDate" ? 'date' : 'string',field)
+                        constructorObj[field] = is(obj[field],field =="SynergyFileDate" ? 'number' : 'string',field)
                 });
                 if( obj.FilingJob )
                     constructorObj.FilingJob = obj.FilingJob;

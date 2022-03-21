@@ -12,14 +12,15 @@ module.exports = (() => {
                 let obj = xmlObjectList[o];
                 for( let i= 0; i < fieldList.length; i++ ){
                     let field = fieldList[i]
-                    console.log(obj,field);
+                    //console.log(obj,field);
                     let curValue = obj[field];
                     if( i !== 0 ) outputString +=',';
                     if( typeof curValue == "string" )
                         outputString += obj[field].replaceAll(',',' ')
                     else if( field == 'SynergyFileDate' ){
+                        console.log('filedate??',curValue,typeof curValue);
                         curValue = new Date(curValue);
-                        outputString += curValue.toDateString();
+                        outputString += curValue.toLocaleString();
                     }
                 }
                 if( fieldList.length !== 0 )
@@ -43,7 +44,12 @@ module.exports = (() => {
                     outputString += "<tr>"
                     fieldList.forEach((field) => {
                         //console.log('field:',field,'val:',xmlObject[key][field])
-                        outputString += "<td>" + xmlObject[key][field] + "</td>"
+                        if( field === "SynergyFileDate" ){
+                            console.log('filedate??',xmlObject[key][field],typeof xmlObject[key][field]);
+                            let d = new Date(xmlObject[key][field]);
+                            outputString += "<td>" + d.toLocaleString() + "</td>"
+                        }
+                        else outputString += "<td>" + xmlObject[key][field] + "</td>"
                     })
                     outputString += "</tr>"
                     // outputString += "<tr>";

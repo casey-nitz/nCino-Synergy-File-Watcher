@@ -17,10 +17,18 @@ module.exports = (()=> {
                 _.set(this,obj);
                 for( let i = 0; i < folderLocations.length; i++ ){
                     let loc = is(folderLocations[i],'string','folderLocations');
-                    _.get(this).watchers[loc] = fs.watch(loc,(eventType,filename)=>{
-                        if( filename ){
+                    _.get(this).watchers[loc] = fs.watch(loc,(eventType,dirName)=>{
+                        if( dirName ){
+                            fs.readdir(loc + "\\" + dirName,(err,files)=>{
+                                if( files ){
+                                    let prefix =  dirName + "\\";
+                                    let f = files.map(ent => prefix + ent);
+                                    console.log('f:',f);
+                                    _.get(this).objectQueues[loc].push(...f);
+                                }
+                            })
                             //console.log(`filename provided: ${filename},`,eventType);
-                            _.get(this).objectQueues[loc].push(filename);
+                            //_.get(this).objectQueues[loc].push(dirName);
                         }
                     });
                     _.get(this).objectQueues[loc] = [];
@@ -35,6 +43,8 @@ module.exports = (()=> {
                     emitObj[loc] = [... new Set(_.get(this).objectQueues[loc])];
                     _.get(this).objectQueues[loc] = [];
                 }
+                console.log('emitting...');
+                console.log(emitObj);
                 this.emit('files',emitObj);
             }catch(err){ errTracer( CLASSNAME, 'clearObjects',err); }
         }

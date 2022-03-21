@@ -19,5 +19,5 @@ module.exports = {
     errTracer(className,fxnName,err){
         throw new Error('Error in ' + className + " attempting to execute function " + fxnName + " : " + err);
     },
-    PROJECTDIR : "C:\\Users\\cnitz\\Documents\\workspace\\nCino-Synergy-File-Watcher\\"
+    PROJECTDIR : "C:\\Users\\cnitz\\Documents\\GitHub\\nCino-Synergy-File-Watcher\\"
 };
