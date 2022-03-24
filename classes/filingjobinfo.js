@@ -8,10 +8,17 @@ const path = require('path');
 
 module.exports = (() => {
     let _ = new WeakMap();
+    /**
+     * Standard object for Synergy XML files
+     */
     class FilingJobInfo {
+        /**
+         * Given the path to the XML file, automatically builds and returns a FilingJobInfo object
+         * @param {String} xmlPath Path to XML file to be parsed
+         * @returns {FilingJobInfo}
+         */
         static buildFromXMLFile( xmlPath ){
             try{
-
                 let xmlString = fs.readFileSync(xmlPath);
                 let newFilingJob = null;
                 parser.parseString(xmlString, function (err, result) {
@@ -30,7 +37,10 @@ module.exports = (() => {
                 return newFilingJob;
             }catch(err){ errTracer(CLASSNAME,'buildFromXMLFile',err) }
         }
-
+        /**
+         * FilingJob constructor
+         * @param {String} xmlPath Path to the XML file
+         */
         constructor( xmlPath ){
             try{
                 let obj = {
@@ -43,13 +53,20 @@ module.exports = (() => {
                 _.set(this,obj);
             }catch(err){ errTracer(CLASSNAME,'constructor',err) }
         }
-
+        /**
+         * List of BatchInfo objects representing the "Batches" tags within a Synergy XML file
+         * @returns {BatchInfo[]}
+         */
         get Batches() { return _.get(this).Batches; }
         addBatch( batchObject ){
             try{
                 this.Batches[batchObject.SeqNum] = batchObject;
             }catch(err){ errTracer( CLASSNAME,'addBatch',err); }
         }
+        /**
+         * Getter and setter for FileLocation. Setting FileLocation also sets the DocID, parsed from the file name
+         * @returns {String}
+         */
         get FileLocation(){ return _.get(this).FileLocation; }
         set FileLocation( which ){
             try{
@@ -58,6 +75,10 @@ module.exports = (() => {
                 _.get(this).DocID = FileName.substring(0,FileName.indexOf('.'));
             }catch(err){ errTracer(CLASSNAME,'setFileLocation',err); }
         }
+        /**
+         * Getter for DocID. No setter defined beause it's set by the FileLocation setter
+         * @returns {String}
+         */
         get DocID(){ return _.get(this).DocID; }
     }
     return FilingJobInfo;

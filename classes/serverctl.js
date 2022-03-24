@@ -10,7 +10,13 @@ const OutputBuilder = require('./outputbuilder');
 
 module.exports = (() => {
     let _ = new WeakMap();
+    /**
+     * Sets up backend server and routes for the process
+     */
     class ServerController{
+        /**
+         * Creates necessary Express objects for setting up a server and endpoints
+         */
         constructor(){
             try{
                 let obj = {
@@ -21,6 +27,9 @@ module.exports = (() => {
                 _.set(this,obj);
             }catch(err){ errTracer(CLASSNAME,'constructor',err); }
         }
+        /**
+         * Setup server using objects instantiated in constructed
+         */
         setupServer(){   
             try{
                 _.get(this).app.use("/", _.get(this).router);
@@ -31,6 +40,9 @@ module.exports = (() => {
                 this.setupRoutes();
             }catch(err){ errTracer(CLASSNAME,'setupServer',err); }      
         }
+        /**
+         * Setup individual routes. Should only really ever be called by setupServer
+         */
         setupRoutes(){
             try{
                 _.get(this).router.get('/',(req,res) => {

@@ -11,11 +11,24 @@ const errorPath = basePath + "\\ERROR\\";
 module.exports = (() => {
     let _ = new WeakMap();
     class nCinoXML {
+        /**
+         * Internal method for retrieving the standard folder locations
+         * @param {String} searchErrors If true (or "true"), returns BACKUP folder, otherwise returns ERROR folder
+         * @returns {String} 
+         */
         static fileLocation(searchErrors){
             if( searchErrors && searchErrors !== "false" )
                 return errorPath;
             return successPath;
         }
+        /**
+         * Build nCinoXML objects from standard Synergy folder
+         * @param {Date} startDate Earliest date to search 
+         * @param {Date} endDate Latest date to search
+         * @param {Boolean} searchErrors true = search ERROR folder, false = search BACKUP folder
+         * @async
+         * @returns {nCinoXML[]} 
+         */
         static buildFromFolder( startDate, endDate, searchErrors ){
             return new Promise((resolve,reject) => {
                 try{
@@ -83,6 +96,11 @@ module.exports = (() => {
                 }catch(err){ reject(errTracer(CLASSNAME,'buildFromFolder',err)); }
             })
         }
+        /**
+         * Build nCinoXML object from file location
+         * @param {String} xmlPath Path to XML file to parse into nCinoXML object
+         * @returns {nCinoXML}
+         */
         static buildFromXMLFile( xmlPath ){
             try{
                 let fj = FilingJobInfo.buildFromXMLFile( xmlPath );
@@ -122,8 +140,28 @@ module.exports = (() => {
                 return new nCinoXML( nCinoObj );
             }catch(err){ errTracer(CLASSNAME,'buildFromXMLFile',err); }
         }
+        /**
+         * Fields expected to be defined in every nCino-related Synergy XML file
+         * @returns {String[]}
+         */
         static getFieldList(){ return FIELDS; }
 
+        /**
+         * nCinoXML constructor
+         * @param {Object} obj JSON object defining fields, should be parsed from XML file
+         * @param {String} [obj.BatchName]
+         * @param {String} [obj.DocName]
+         * @param {String} [obj.DocLocation]
+         * @param {String} [obj.DocID]
+         * @param {String} [obj.DocDate]
+         * @param {String} [obj.Institution]
+         * @param {String} [obj.Cabinet]
+         * @param {String} [obj.Type]
+         * @param {String} [obj.AcctNo]
+         * @param {String} [obj.TaxID]
+         * @param {String} [obj.Name]
+         * @param {Number} [obj.SynergyFileDate] Number representing a UTC date, when the file was loaded into the file location
+         */
         constructor( obj ){
             try{
                 let constructorObj = {};
@@ -136,78 +174,130 @@ module.exports = (() => {
                 _.set(this,constructorObj);
             }catch(err){ errTracer(CLASSNAME,'constructor',err); }
         }
+        /**
+         * FilingJob getter/setter
+         * @returns {String}
+         */
         get FilingJob(){ return _.get(this).FilingJob; }
         set FilingJob( which ){
             try{
                 _.get(this).FilingJob = is(which,'string','FilingJob')
             }catch(err){ errTracer(CLASSNAME,'setFilingJob',err); }
         }
+        /**
+         * BatchName getter/setter
+         * @returns {String}
+         */
         get BatchName(){ return _.get(this).BatchName; }
         set BatchName( which ){
             try{
                 _.get(this).BatchName = is(which,'string','BatchName');
             }catch(err){ errTracer(CLASSNAME,'setBatchName',err); }
         }
+        /**
+         * DocName getter/setter
+         * @returns {String}
+         */
         get DocName(){ return _.get(this).DocName; }
         set DocName(which){
             try{
                 _.get(this).DocName = is(which,'string','DocName');
             }catch(err){ errTracer(CLASSNAME,'setDocName',err); }
         }
+        /**
+         * DocLocation getter/setter
+         * @returns {String}
+         */
         get DocLocation(){ return _.get(this).DocLocation; }
         set DocLocation(which){
             try{
                 _.get(this).DocLocation = is(which,'string','DocLocation');
             }catch(err){ errTracer(CLASSNAME,'setDocLocation',err); }
         }
+        /**
+         * DocID getter/setter
+         * @returns {String}
+         */
         get DocID(){ return _.get(this).DocID; }
         set DocID(which){
             try{
                 _.get(this).DocID = is(which,'string','DocID');
             }catch(err){ errTracer(CLASSNAME,'setDocID',err); }
         }
+        /**
+         * DocDate getter/setter
+         * @returns {String}
+         */
         get DocDate(){ return _.get(this).DocDate; }
         set DocDate(which){
             try{
                 _.get(this).DocDate = is(which,'string','DocDate');
             }catch(err){ errTracer(CLASSNAME,'setDocDate',err); }
         }
+        /**
+         * Institution getter/setter
+         * @returns {String}
+         */
         get Institution(){ return _.get(this).Institution; }
         set Institution(which){
             try{
                 _.get(this).Institution = is(which,'string','Institution');
-            }catch(err){ errTracer(CLASSNAME,'setInstitutione',err); }
+            }catch(err){ errTracer(CLASSNAME,'setInstitution',err); }
         }
+        /**
+         * Cabinet getter/setter
+         * @returns {String}
+         */
         get Cabinet(){ return _.get(this).Cabinet; }
         set Cabinet(which){
             try{
                 _.get(this).Cabinet = is(which,'string','Cabinet');
             }catch(err){ errTracer(CLASSNAME,'setCabinet',err); }
         }
+        /**
+         * Type getter/setter
+         * @returns {String}
+         */
         get Type(){ return _.get(this).Type; }
         set Type(which){
             try{
                 _.get(this).Type = is(which,'string','Type');
             }catch(err){ errTracer(CLASSNAME,'setType',err); }
         } 
+        /**
+         * AcctNo getter/setter
+         * @returns {String}
+         */
         get AcctNo(){ return _.get(this).AcctNo; }
         set AcctNo(which){
             try{
                 _.get(this).AcctNo = is(which,'string','AcctNo');
             }catch(err){ errTracer(CLASSNAME,'setAcctNo',err); }
         }
+        /**
+         * TaxID getter/setter
+         * @returns {String}
+         */
         get TaxID(){ return _.get(this).TaxID; }
         set TaxID(which){
             try{
                 _.get(this).TaxID = is(which,'string','TaxID');
             }catch(err){ errTracer(CLASSNAME,'setTaxID',err); }
         }
+        /**
+         * Name getter/setter
+         * @returns {String}
+         */
         get Name(){ return _.get(this).Name; }
         set Name( which ){
             try{
                 _.get(this).Name = is(which,'string','Name')
             }catch(err){ errTracer(CLASSNAME,'setName',err) }
         }
+        /**
+         * SynergyFileDate getter/setter. Number corresponding to a UTC value in milliseconds, representing the date the file was uploaded to the Synergy file location
+         * @returns {Number}
+         */
         get SynergyFileDate(){ return _.get(this).SynergyFileDate; }
         set SynergyFileDate(which){
             try{

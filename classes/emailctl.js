@@ -3,13 +3,16 @@ const CLASSNAME = "EmailController";
 const nodemailer = require("nodemailer");
 
 module.exports = (() => {
+    /**
+     * Class with static method for sending an email through the standard MCU SMTP server
+     */
     class EmailController{
-        static SendXMLInformation( recipients ){
-            try{
-
-                "<h3>Errors occurred on the nCino Synergy AutoImport process for the following records:</h3><br/>" + msg.replace('\n','<br/>')
-            }catch(err){ errTracer(CLASSNAME,'SendEmail') }
-        }
+        /**
+         * Sends an email with the given parameters as defined. Sent from info@marinecu.com
+         * @param {String} recipients List of recipients, comma-delimited
+         * @param {String} subject Subject line of email to be sent
+         * @param {String} msg Message body. Can be plain text or HTML-formatted
+         */
         static SendEmail( recipients, subject, msg ){
             is(recipients,'string','recipients');
             is(subject,'string','subject');

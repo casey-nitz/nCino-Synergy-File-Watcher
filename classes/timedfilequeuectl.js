@@ -5,7 +5,19 @@ const fs = require('fs');
 
 module.exports = (()=> {
     let _ = new WeakMap();
+    /**
+     * Timed file-watcher mechanism
+     */
     class TimedFileQueueController extends EventEmitter{
+        /**
+         * Given a list of folder locations, setup a file watcher for each folder, storing a list of all files that get added to the folder.
+         * Every <interval> milliseconds, emit the current list of files and clear list. 
+         * 
+         * Effectively creates a notification about how many files were added to the folder in a given timeframe
+         *  
+         * @param {String[]} folderLocations Locations to watch for files on
+         * @param {Number} interval Number of milliseconds after which to clear file queue and emit list
+         */
         constructor( folderLocations, interval ){
             try{
                 super();
@@ -36,6 +48,9 @@ module.exports = (()=> {
                 setInterval(this._clearObjects.bind(this),interval)
             }catch(err){ errTracer( CLASSNAME,'constructor',err); }
         }
+        /**
+         * Internal method, clearing objects from current queues
+         */
         _clearObjects(){
             try{
                 let emitObj = {};
